@@ -1,0 +1,15 @@
+blacklist = ["^scratch$", "^_"]
+
+[[session]]
+name = "downloads"
+path = "~/Downloads"
+startup_command = "yazi"
+
+[[session]]
+name = "screenshots"
+path = "~/Pictures/Screenshots"
+startup_command = "yazi"
+
+[[session]]
+name = "music"
+startup_command = "lazyspotify"
