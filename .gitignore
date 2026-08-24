@@ -1,5 +1,23 @@
+# .config — runtime/state
 /.config/gh/
 /.config/github-copilot/
+/.config/mozilla/firefox
+/.config/net.imput.helium
+/.config/go/telemetry/local
+/.config/mcp
+/.config/mimeapps.list
+/.config/dconf
+/.config/pulse
+/.config/opencode
+/.config/wo
+/.config/pi
+/.config/lazyspotify
+!/.config/lazyspotify/config.toml
+/.config/cava
+!/.config/cava/config
+
+# claude — local settings (any depth)
+**/.claude/settings.local.json
 
 # pi agent runtime/state (keep settings + customization resources tracked)
 /.pi/agent/*
@@ -17,6 +35,8 @@
 # pi extensions node_modules
 /.pi/agent/extensions/**/node_modules/
 
+
+
 !/.pi/agent/tsconfig.json
 !/.pi/agent/package.json
 !/.pi/agent/themes/
@@ -28,19 +48,3 @@
 !/.pi/agent/settings.json
 !/.pi/agent/pi-permissions.jsonc
 !/.pi/agent/APPEND_SYSTEM.md
-
-**/.claude/settings.local.json
-/.config/mozilla/firefox
-/.config/net.imput.helium
-/.config/lazyspotify
-!/.config/lazyspotify/config.toml
-/.config/cava
-!/.config/cava/config
-/.config/go/telemetry/local
-/.config/mcp
-/.config/mimeapps.list
-/.config/dconf
-/.config/pulse
-/.config/opencode
-/.config/wo
-/.config/pi
