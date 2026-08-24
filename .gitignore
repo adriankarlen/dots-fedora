@@ -17,7 +17,6 @@
 # pi extensions node_modules
 /.pi/agent/extensions/**/node_modules/
 
-
 !/.pi/agent/tsconfig.json
 !/.pi/agent/package.json
 !/.pi/agent/themes/
@@ -44,3 +43,4 @@
 /.config/pulse
 /.config/opencode
 /.config/wo
+/.config/pi
