@@ -87,6 +87,7 @@ now_if_args(function()
     "tailwindcss",
     "taplo",
     "vtsls",
+    "tsc",
     "yamlls",
   }
 
