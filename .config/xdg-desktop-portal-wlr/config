@@ -1,0 +1,37 @@
+# xdg-desktop-portal-wlr - screencast backend for sway.
+#
+# Portal *routing* is not configured here and needs no file of its own: Fedora
+# ships /usr/share/xdg-desktop-portal/sway-portals.conf, which already sends
+# ScreenCast and Screenshot to this backend and everything else (file chooser,
+# Settings/dark-mode, notifications) to xdg-desktop-portal-gtk. That file is
+# picked up because XDG_CURRENT_DESKTOP=sway, set by
+# /etc/sway/config.d/10-systemd-session.conf.
+#
+# xdpw reads $XDG_CONFIG_HOME/xdg-desktop-portal-wlr/$XDG_CURRENT_DESKTOP
+# before this generic `config`, so a sway-specific override would go in a file
+# named `sway` alongside it.
+#
+# Changes need `systemctl --user restart xdg-desktop-portal-wlr`; there is no
+# config-reload signal.
+
+[screencast]
+
+# Cap capture at 60fps. Without this xdpw captures at the output's refresh
+# rate; the cap exists to bound CPU, not to match the display.
+max_fps=60
+
+# When an app asks to share the screen, run a chooser to pick which output.
+# `simple` means the command is run with nothing on stdin and its stdout is
+# read back.
+chooser_type=simple
+
+# -o gives one predefined rectangle per output, -r requires picking one of
+# them (so this is a click-a-monitor prompt, not a freehand drag).
+#
+# The "Monitor: " prefix is REQUIRED, not decoration: xdpw only accepts stdout
+# matching "Monitor: <output>" or "Window: <id>", and treats anything else --
+# including a bare output name -- as the user declining the screencast.
+#
+# Escape / right-click exits slurp with no stdout, which is exactly the signal
+# for "declined", so cancelling works without extra handling.
+chooser_cmd=slurp -f 'Monitor: %o' -or
