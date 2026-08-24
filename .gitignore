@@ -27,6 +27,7 @@
 !/.pi/agent/keybindings.json
 !/.pi/agent/mcp.json
 !/.pi/agent/settings.json
+!/.pi/agent/pi-permissions.jsonc
 !/.pi/agent/APPEND_SYSTEM.md
 
 **/.claude/settings.local.json
