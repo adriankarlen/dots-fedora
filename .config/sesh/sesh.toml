@@ -1,5 +1,9 @@
 blacklist = ["^scratch$", "^_"]
 
+[[wildcard]]
+pattern = "~/repos/*"
+startup_command = "nvim"
+
 [[session]]
 name = "downloads"
 path = "~/Downloads"
@@ -13,3 +17,8 @@ startup_command = "yazi"
 [[session]]
 name = "music"
 startup_command = "lazyspotify"
+
+[[session]]
+name = "dots"
+path = "~/dots-fedora"
+startup_command = "nvim"
