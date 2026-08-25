@@ -1,50 +1,50 @@
 # .config — runtime/state
-/.config/gh/
-/.config/github-copilot/
-/.config/mozilla/firefox
-/.config/net.imput.helium
-/.config/go/telemetry/local
-/.config/mcp
-/.config/mimeapps.list
-/.config/dconf
-/.config/pulse
-/.config/opencode
-/.config/wo
-/.config/pi
-/.config/lazyspotify
-!/.config/lazyspotify/config.toml
-/.config/cava
-!/.config/cava/config
+/home/.config/gh/
+/home/.config/github-copilot/
+/home/.config/mozilla/firefox
+/home/.config/net.imput.helium
+/home/.config/go/telemetry/local
+/home/.config/mcp
+/home/.config/mimeapps.list
+/home/.config/dconf
+/home/.config/pulse
+/home/.config/opencode
+/home/.config/wo
+/home/.config/pi
+/home/.config/lazyspotify
+!/home/.config/lazyspotify/config.toml
+/home/.config/cava
+!/home/.config/cava/config
 
 # claude — local settings (any depth)
 **/.claude/settings.local.json
 
 # pi agent runtime/state (keep settings + customization resources tracked)
-/.pi/agent/*
-/.pi/todos/*
-/.pi/.pi/todos/*
-.pi/todos/*
+/home/.pi/agent/*
+/home/.pi/todos/*
+/home/.pi/.pi/todos/*
+/home/.pi/todos/*
 
 # pi MCP adapter runtime/secrets
-/.pi/agent/mcp-oauth/
-/.pi/agent/mcp-cache.json
-/.pi/agent/mcp-npx-cache.json
-/.pi/agent/mcp-auth.json
-/.local/share/pi/mcp-auth.json
+/home/.pi/agent/mcp-oauth/
+/home/.pi/agent/mcp-cache.json
+/home/.pi/agent/mcp-npx-cache.json
+/home/.pi/agent/mcp-auth.json
+/home/.local/share/pi/mcp-auth.json
 
 # pi extensions node_modules
-/.pi/agent/extensions/**/node_modules/
+/home/.pi/agent/extensions/**/node_modules/
 
-
-
-!/.pi/agent/tsconfig.json
-!/.pi/agent/package.json
-!/.pi/agent/themes/
-!/.pi/agent/themes/*.json
-!/.pi/agent/extensions/
-!/.pi/agent/extensions/**
-!/.pi/agent/keybindings.json
-!/.pi/agent/mcp.json
-!/.pi/agent/settings.json
-!/.pi/agent/pi-permissions.jsonc
-!/.pi/agent/APPEND_SYSTEM.md
+!/home/.pi/agent/tsconfig.json
+!/home/.pi/agent/package.json
+!/home/.pi/agent/themes/
+!/home/.pi/agent/themes/*.json
+!/home/.pi/agent/extensions/
+!/home/.pi/agent/extensions/**
+!/home/.pi/agent/keybindings.json
+!/home/.pi/agent/mcp.json
+!/home/.pi/agent/pi-permissions.jsonc
+# settings.json is intentionally NOT tracked: pi rewrites it on model
+# switches, changelog dismissal, etc. See scripts/install-pi-packages.sh
+# for the tracked source of truth on installed packages.
+!/home/.pi/agent/APPEND_SYSTEM.md

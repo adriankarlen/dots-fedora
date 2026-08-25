@@ -50,8 +50,6 @@ return {
       return
     end
 
-    vim.print(ts_major, root)
-
     -- Bail out if a deno project root is at or below this root (deno takes
     -- over even if npm-compat node_modules/typescript is present).
     local deno_root = vim.fs.root(bufnr, { "deno.json", "deno.jsonc", "deno.lock" })
