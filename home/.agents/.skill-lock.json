@@ -251,15 +251,6 @@
       "installedAt": "2026-08-18T08:10:53.104Z",
       "updatedAt": "2026-08-18T08:10:53.104Z"
     },
-    "typescript-advanced-types": {
-      "source": "wshobson/agents",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/wshobson/agents.git",
-      "skillPath": "plugins/javascript-typescript/skills/typescript-advanced-types/SKILL.md",
-      "skillFolderHash": "7e9663cb1d15ca0aff369d35a31348b7e8cf5e95",
-      "installedAt": "2026-08-18T08:12:38.516Z",
-      "updatedAt": "2026-08-18T08:12:38.516Z"
-    },
     "humanizer": {
       "source": "blader/humanizer",
       "sourceType": "github",
