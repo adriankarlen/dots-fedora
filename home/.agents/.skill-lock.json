@@ -251,15 +251,6 @@
       "installedAt": "2026-08-18T08:10:53.104Z",
       "updatedAt": "2026-08-18T08:10:53.104Z"
     },
-    "svelte-code-writer": {
-      "source": "sveltejs/ai-tools",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/sveltejs/ai-tools.git",
-      "skillPath": "plugins/claude/svelte/skills/svelte-code-writer/SKILL.md",
-      "skillFolderHash": "177e9694aa97200de84999b8ab46b7b8db43c5cb",
-      "installedAt": "2026-08-18T08:12:01.651Z",
-      "updatedAt": "2026-08-18T08:12:01.651Z"
-    },
     "typescript-advanced-types": {
       "source": "wshobson/agents",
       "sourceType": "github",
@@ -277,15 +268,6 @@
       "skillFolderHash": "ebf637bdae86b62a7b006c447bb98cfa0ccc979d",
       "installedAt": "2026-08-18T10:37:52.667Z",
       "updatedAt": "2026-08-18T10:37:52.667Z"
-    },
-    "svelte-core-bestpractices": {
-      "source": "sveltejs/ai-tools",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/sveltejs/ai-tools.git",
-      "skillPath": "plugins/claude/svelte/skills/svelte-core-bestpractices/SKILL.md",
-      "skillFolderHash": "f4e209ec609db21f44f8e63b6b9cd622fdf4dcd4",
-      "installedAt": "2026-08-22T21:58:57.722Z",
-      "updatedAt": "2026-08-22T21:58:57.722Z"
     },
     "caveman": {
       "source": "juliusbrussee/caveman",
@@ -322,7 +304,6 @@
     "kimi-code-cli",
     "opencode",
     "warp",
-    "zed",
-    "pi"
+    "zed"
   ]
 }
