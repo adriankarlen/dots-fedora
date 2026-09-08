@@ -16,7 +16,7 @@ packages=(
   "npm:pi-web-access"
   "npm:pi-zentui"
   "npm:pi-rose-pine"
-  "npm:pi-permission-system"
+  "npm:@gotgenes/pi-permission-system"
 )
 
 for pkg in "${packages[@]}"; do
