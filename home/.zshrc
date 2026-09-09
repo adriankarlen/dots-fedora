@@ -100,6 +100,7 @@ alias .3="cd ../../.."
 alias .4="cd ../../../.."
 alias .5="cd ../../../../.."
 alias x="exit"
+alias rg="rg --hidden --glob '!.git/*' --glob '!node_modules/*' --glob '!dist/*' --glob '!build/*'"
 
 # eza aliases, active only once eza is installed
 if command -v eza >/dev/null 2>&1; then
