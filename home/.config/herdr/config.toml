@@ -1,0 +1,45 @@
+onboarding = false
+[theme]
+name = "rose-pine"
+
+[keys]
+prefix = "ctrl+a"
+previous_workspace = "prefix+shift+k"
+next_workspace = "prefix+shift+j"
+rename_tab = "prefix+shift+,"
+
+[[keys.command]]
+key = "prefix+t"
+type = "plugin_action"
+command = "fullerzz.sesh.open-picker"
+description = "open Sesh picker"
+
+[[keys.command]]
+key = "prefix+shift+b"
+type = "plugin_action"
+command = "fullerzz.sesh.last"
+description = "switch to previous Sesh workspace"
+
+[[keys.command]]
+key = "prefix+g"
+type = "pane"
+command = "lazygit"
+
+[[keys.command]]
+key = "prefix+n"
+type = "shell"
+command = "herdr-tab-dev"
+
+[ui]
+mobile_width_threshold = 64
+mouse_capture = true
+redraw_on_focus_gained = true
+mouse_scroll_lines = 3
+confirm_close = true
+prompt_new_tab_name = false
+show_agent_labels_on_pane_borders = true
+accent = "cyan"
+
+status_indicators = "dots"
+[ui.toast]
+delivery = "herdr"
