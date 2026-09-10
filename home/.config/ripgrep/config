@@ -1,6 +1,4 @@
 --hidden
-# Don't respect .gitignore rules, so real files like .env and .pi/ show up.
-# .ignore / .rgignore files still work for per-project excludes.
 --no-ignore-vcs
 # Exclude the obvious junk
 --glob=!.git/
