@@ -38,7 +38,7 @@ keybinding:
     viewResetOptions: <disabled>
 customCommands:
   - key: "U"
-    command: "git submodule update --init --recursive"
+    command: "git submodule update --init --recursive --remote --merge"
     context: "global"
     description: "Update submodules"
     loadingText: "Updating submodules..."
