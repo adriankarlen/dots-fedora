@@ -100,6 +100,8 @@ alias .3="cd ../../.."
 alias .4="cd ../../../.."
 alias .5="cd ../../../../.."
 alias x="exit"
+# rg is tuned globally in ~/.config/ripgrep/config (hidden + gitignored files,
+# minus junk). That config also applies to rg calls from nvim (mini.pick).
 
 # eza aliases, active only once eza is installed
 if command -v eza >/dev/null 2>&1; then
@@ -114,6 +116,6 @@ if command -v eza >/dev/null 2>&1; then
 fi
 
 # shell integrations
-eval "$(fnm env --use-on-cd --shell zsh)"
+# Node.js + package managers are handled by Vite+ (see ~/.zshenv), not fnm.
 eval "$(fzf --zsh)"
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"

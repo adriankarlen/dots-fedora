@@ -40,14 +40,19 @@ MARKSMAN_REPO="artempyanykh/marksman"
 
 declare -A INSTALLED
 
-# One npm call and one cargo call for every package, rather than one per LSP.
+# One vp-global call and one cargo call for every package, rather than one
+# per LSP.
 load_installed() {
   local pkg ver
+
+  # `vp install -g` / `vp ls -g` is vp's own global-package tracker; it is
+  # separate from npm's own `npm install -g` bookkeeping, so `vp ls -g` is
+  # the only reliable source of what's actually installed this way.
   while IFS=$'\t' read -r pkg ver; do
     [[ -n "$pkg" ]] && INSTALLED[$pkg]=$ver
   done < <(
-    npm list -g --depth=0 --json 2>/dev/null |
-      jq -r '.dependencies // {} | to_entries[] | "\(.key)\t\(.value.version)"' 2>/dev/null || true
+    vp ls -g --json 2>/dev/null |
+      jq -r '.[] | "\(.name)\t\(.version)"' 2>/dev/null || true
   )
 
   while IFS=$'\t' read -r pkg ver; do
@@ -68,7 +73,7 @@ load_installed() {
   fi
 }
 
-npm_latest() { npm view "$1" version 2>/dev/null || true; }
+npm_latest() { vp info "$1" version 2>/dev/null || true; }
 
 go_latest() {
   go list -m -versions "$1" 2>/dev/null | tr ' ' '\n' | tail -1 | tr -d v || true
@@ -104,8 +109,8 @@ install_one() {
   local manager=$2 pkg=$3
   case "$manager" in
   npm)
-    echo "==> npm install -g $pkg"
-    npm install -g "$pkg"
+    echo "==> vp install -g $pkg"
+    vp install -g "$pkg"
     ;;
   go)
     echo "==> go install ${pkg}@latest"
