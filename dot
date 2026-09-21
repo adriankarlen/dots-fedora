@@ -60,6 +60,27 @@ readonly NVIM_NIGHTLY_DIR="/opt/nvim-linux-${NVIM_NIGHTLY_ARCH}"
 readonly NVIM_NIGHTLY_BIN="${NVIM_NIGHTLY_DIR}/bin/nvim"
 readonly NVIM_NIGHTLY_LINK="/usr/local/bin/nvim"
 
+# Copilot Language Server ships as a self-contained per-platform binary via
+# GitHub Releases (github/copilot-language-server-release) — no Node.js
+# runtime needed, no npm involved. Installed the same way as Neovim nightly
+# above: extracted to /opt (root-owned, hence sudo), then symlinked into
+# /usr/local/bin. This deliberately bypasses npm-based global installers
+# (e.g. vp): the published npm package's own `bin` field points at
+# `../dist/language-server.js`, which resolves outside the package
+# directory and breaks under vp's install layout. The GitHub release asset
+# has no such indirection. Release asset arch naming differs from Neovim's
+# ("arm64"/"x64" here, not "arm64"/"x86_64"), hence a separate case map.
+case "$(uname -m)" in
+    aarch64|arm64) COPILOT_LS_ARCH="arm64" ;;
+    x86_64|amd64)  COPILOT_LS_ARCH="x64" ;;
+    *)             COPILOT_LS_ARCH="" ;;
+esac
+readonly COPILOT_LS_ARCH
+readonly COPILOT_LS_DIR="/opt/copilot-language-server-linux-${COPILOT_LS_ARCH}"
+readonly COPILOT_LS_BIN="${COPILOT_LS_DIR}/copilot-language-server"
+readonly COPILOT_LS_LINK="/usr/local/bin/copilot-language-server"
+readonly COPILOT_LS_RELEASES_API="https://api.github.com/repos/github/copilot-language-server-release/releases/latest"
+
 # Representative paths to spot-check in `doctor`. Mix of top-level files
 # (stow'd as individual symlinks) and nested entries under .config
 # (reachable via the tree-fold symlink at ~/.config → home/.config).
@@ -530,13 +551,132 @@ __install_nvim_nightly() {
     __print_success "Neovim nightly installed: $("$NVIM_NIGHTLY_BIN" --version | head -1)"
 }
 
+# Prints "<version>\t<zip_url>" for the current linux-${COPILOT_LS_ARCH}
+# release asset of copilot-language-server-release, or returns 1 if either
+# can't be determined (unsupported arch, network failure, API shape change).
+__copilot_ls_latest_release() {
+    [[ -n "$COPILOT_LS_ARCH" ]] || return 1
+
+    local json version url
+    json="$(curl -fsSL "$COPILOT_LS_RELEASES_API" 2>/dev/null)" || return 1
+    version="$(grep -o '"tag_name": *"[^"]*"' <<< "$json" | head -1 | cut -d'"' -f4)"
+    url="$(grep -o '"browser_download_url": *"[^"]*linux-'"${COPILOT_LS_ARCH}"'[^"]*\.zip"' <<< "$json" \
+        | head -1 | cut -d'"' -f4)"
+
+    [[ -n "$version" && -n "$url" ]] || return 1
+    echo -e "${version}\t${url}"
+}
+
+# Prints "<local_version>\t<remote_version>" for the installed
+# copilot-language-server vs the current GitHub release. Used by both
+# `dot outdated` and `dot update`. Returns 1 (no output) if it isn't
+# installed at ${COPILOT_LS_BIN} or either version can't be determined.
+__copilot_ls_status() {
+    [[ -x "$COPILOT_LS_BIN" ]] || return 1
+
+    local local_version release remote_version
+    local_version="$("$COPILOT_LS_BIN" --version 2>/dev/null | head -1 | tr -d '[:space:]')"
+    release="$(__copilot_ls_latest_release)" || return 1
+    remote_version="${release%%$'\t'*}"
+
+    [[ -n "$local_version" && -n "$remote_version" ]] || return 1
+    echo -e "${local_version}\t${remote_version}"
+}
+
+# Downloads and installs the current copilot-language-server release to
+# ${COPILOT_LS_DIR} (root-owned, hence sudo), then (re)links
+# ${COPILOT_LS_LINK} to it. Safe to re-run: skips the download entirely
+# when the installed version already matches the latest release.
+__install_copilot_language_server() {
+    if [[ -z "$COPILOT_LS_ARCH" ]]; then
+        __print_warning "Unsupported architecture for copilot-language-server (uname -m: $(uname -m)), skipping"
+        return 0
+    fi
+
+    local status local_version remote_version
+    if status="$(__copilot_ls_status)"; then
+        local_version="${status%%$'\t'*}"
+        remote_version="${status##*$'\t'}"
+        if [[ "$local_version" == "$remote_version" ]]; then
+            __ensure_copilot_ls_link
+            __print_success "copilot-language-server already up to date: ${local_version}"
+            return 0
+        fi
+    fi
+
+    __print_info "Resolving latest copilot-language-server release..."
+    local release version url
+    if ! release="$(__copilot_ls_latest_release)"; then
+        __print_error "Failed to resolve latest copilot-language-server release"
+        return 1
+    fi
+    version="${release%%$'\t'*}"
+    url="${release##*$'\t'}"
+
+    if ! __command_exists unzip; then
+        __print_error "unzip is required to install copilot-language-server"
+        return 1
+    fi
+
+    __print_info "Installing copilot-language-server ${version}..."
+    local tmp
+    tmp=$(mktemp -d)
+
+    if ! curl -fL --output-dir "$tmp" -o copilot-language-server.zip "$url"; then
+        __print_error "Failed to download copilot-language-server"
+        rm -rf "$tmp"
+        return 1
+    fi
+
+    if ! unzip -q -o "${tmp}/copilot-language-server.zip" -d "${tmp}/extracted"; then
+        __print_error "Failed to extract copilot-language-server"
+        rm -rf "$tmp"
+        return 1
+    fi
+    chmod +x "${tmp}/extracted/copilot-language-server"
+
+    if ! sudo rm -rf "$COPILOT_LS_DIR" \
+        || ! sudo mkdir -p "$COPILOT_LS_DIR" \
+        || ! sudo cp "${tmp}/extracted/copilot-language-server" "$COPILOT_LS_BIN"; then
+        __print_error "Failed to install copilot-language-server (sudo step failed)"
+        rm -rf "$tmp"
+        return 1
+    fi
+    rm -rf "$tmp"
+
+    if [[ ! -x "$COPILOT_LS_BIN" ]]; then
+        __print_error "copilot-language-server install looked successful but ${COPILOT_LS_BIN} is missing"
+        return 1
+    fi
+
+    __ensure_copilot_ls_link
+    __print_success "copilot-language-server installed: $("$COPILOT_LS_BIN" --version 2>&1 | head -1)"
+}
+
+# Ensures ${COPILOT_LS_LINK} points at ${COPILOT_LS_BIN}. Split out from
+# __install_copilot_language_server so the "already up to date" fast path
+# (no download/sudo needed) still repairs a missing/stale symlink instead
+# of silently leaving `copilot-language-server` unresolvable on PATH.
+__ensure_copilot_ls_link() {
+    if [[ "$(readlink -f "$COPILOT_LS_LINK" 2>/dev/null)" == "$(readlink -f "$COPILOT_LS_BIN")" ]]; then
+        return 0
+    fi
+
+    __print_info "Linking ${COPILOT_LS_LINK} -> ${COPILOT_LS_BIN}..."
+    if ! sudo ln -sfn "$COPILOT_LS_BIN" "$COPILOT_LS_LINK"; then
+        __print_error "Failed to link ${COPILOT_LS_LINK}"
+        return 1
+    fi
+}
+
 readonly -a UPDATE_STEPS=(
-    "System packages (dnf)   ;; __update_dnf             ;; dnf"
-    "Flatpak apps            ;; __update_flatpak         ;; flatpak"
-    "pi packages             ;; __update_pi_packages     ;; pi"
-    "vp global packages      ;; __update_vp_packages     ;; vp"
-    "Yazi packages           ;; __update_yazi_packages   ;; yazi"
-    "Neovim nightly          ;; __install_nvim_nightly   ;; nvim"
+    "System packages (dnf)   ;; __update_dnf                       ;; dnf"
+    "Flatpak apps            ;; __update_flatpak                   ;; flatpak"
+    "pi packages             ;; __update_pi_packages                ;; pi"
+    "vp global packages      ;; __update_vp_packages                ;; vp"
+    "Yazi packages           ;; __update_yazi_packages              ;; yazi"
+    "Neovim nightly          ;; __install_nvim_nightly              ;; nvim"
+    "Copilot Language Server ;; __install_copilot_language_server   ;; copilot"
 )
 
 __update_step_targets() {
@@ -595,9 +735,11 @@ cmd_update() {
                 echo
                 echo "Update everything this machine has installed on top of the dotfiles:"
                 echo "dnf system packages, flatpak apps, pi itself and its installed"
-                echo "packages, vp global npm packages, Yazi packages, and Neovim nightly"
-                echo "(built from source releases, installed to"
-                echo "${NVIM_NIGHTLY_DIR}). dnf, flatpak, and Neovim steps use sudo."
+                echo "packages, vp global npm packages, Yazi packages, Neovim nightly"
+                echo "(built from source releases, installed to ${NVIM_NIGHTLY_DIR}), and"
+                echo "Copilot Language Server (from GitHub releases, installed to"
+                echo "${COPILOT_LS_DIR}). dnf, flatpak, Neovim, and Copilot Language"
+                echo "Server steps use sudo."
                 echo
                 echo "Give TARGET to update just one of these instead of everything."
                 echo "Valid targets: $(__update_step_targets)"
@@ -643,8 +785,8 @@ cmd_outdated() {
         echo
         echo "Check every package manager and tool this machine tracks for available"
         echo "updates: dnf system packages, flatpak apps, pi packages, vp-managed"
-        echo "global npm packages and Node.js itself, Yazi packages/flavors, and"
-        echo "Neovim nightly."
+        echo "global npm packages and Node.js itself, Yazi packages/flavors, Neovim"
+        echo "nightly, and Copilot Language Server."
         echo "Prints one combined, easy-to-scan report per source."
         echo
         echo "Read-only: this only checks, it never installs anything. Run"
@@ -776,6 +918,20 @@ cmd_outdated() {
         __print_warning "Neovim nightly not installed, skipping"
     fi
 
+    local copilot_ls_status copilot_ls_local copilot_ls_remote
+    if copilot_ls_status="$(__copilot_ls_status)"; then
+        copilot_ls_local="${copilot_ls_status%%$'\t'*}"
+        copilot_ls_remote="${copilot_ls_status##*$'\t'}"
+        if [[ "$copilot_ls_local" != "$copilot_ls_remote" ]]; then
+            __outdated_section "Copilot Language Server" "LOCAL\tREMOTE" "${copilot_ls_local}\t${copilot_ls_remote}"
+            ((++grand_total))
+        else
+            __print_success "Copilot Language Server: up to date"
+        fi
+    else
+        __print_warning "Copilot Language Server not installed, skipping"
+    fi
+
     if [[ $grand_total -eq 0 ]]; then
         __print_success "Everything is up to date"
     else
@@ -829,7 +985,7 @@ cmd_help() {
     echo "    link                Symlink this script into ~/.local/bin/dot"
     echo "    unlink              Remove the ~/.local/bin/dot symlink"
     echo "    edit                Open the repo in \$EDITOR"
-    echo "    update [TARGET]     Update everything installed (dnf, flatpak, pi, vp, yazi, nvim)"
+    echo "    update [TARGET]     Update everything installed (dnf, flatpak, pi, vp, yazi, nvim, copilot)"
     echo "    outdated            Report outdated packages across every tool tracked (read-only)"
     echo "    help [COMMAND]      Show this help, or help for a specific command"
     echo

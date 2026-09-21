@@ -8,10 +8,6 @@
 #   lsp-manage update <name>     install/update a single LSP (e.g. gopls, eslint)
 #
 # `list` is local-only and fast. Only `outdated` and `update` touch the network.
-#
-# roslyn_ls is intentionally not handled here: it requires the .NET SDK,
-# which isn't installed on this machine. Install manually with:
-#   dotnet tool install --global roslyn-language-server --prerelease
 
 set -euo pipefail
 
@@ -28,7 +24,6 @@ vtsls       npm      @vtsls/language-server
 yamlls      npm      yaml-language-server
 oxlint      npm      oxlint
 oxfmt       npm      oxfmt
-copilot     npm      @github/copilot-language-server
 tsc         npm      typescript
 gopls       go       golang.org/x/tools/gopls
 emmylua_ls  cargo    emmylua_ls
