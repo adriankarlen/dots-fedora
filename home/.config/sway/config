@@ -86,7 +86,7 @@ exec_always pkill -x wl-paste; wl-paste --type text --watch cliphist store
 
 ### Window rules
 #
-    for_window [app_id="com.mitchellh.ghostty.wlctl"] floating enable, resize set 900 600, move position center
+    for_window [app_id="com.mitchellh.ghostty.float"] floating enable, resize set 1200 800, move position center
 
     assign [app_id="com.mitchellh.ghostty.lazyspotify"] workspace number 4
 
