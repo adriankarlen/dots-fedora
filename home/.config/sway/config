@@ -88,6 +88,9 @@ exec_always pkill -x wl-paste; wl-paste --type text --watch cliphist store
 #
     for_window [app_id="com.mitchellh.ghostty.float"] floating enable, resize set 1200 800, move position center
 
+    assign [app_id="net.imput.helius"] workspace number 1
+    assign [app_id="dev.kvist.browser"] workspace number 1
+    assign [app_id="com.mitchellh.ghostty"] workspace number 2
     assign [app_id="com.mitchellh.ghostty.lazyspotify"] workspace number 4
 
 ### Key bindings
