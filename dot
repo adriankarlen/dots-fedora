@@ -396,8 +396,8 @@ cmd_edit() {
 # ─── Update: refresh everything already installed ───────────────────────
 # Companion to `stow`, but for the tools this machine has installed on top
 # of the dotfiles themselves: dnf/flatpak system packages, pi packages, vp
-# global npm packages + Node, tmux plugins (tpack), and Yazi packages. Every
-# step below is written to be safe to re-run.
+# global npm packages + Node, and Yazi packages. Every step below is written
+# to be safe to re-run.
 
 __update_dnf() {
     if ! __command_exists dnf; then
@@ -449,26 +449,6 @@ __update_vp_packages() {
     __print_info "Updating vp global packages..."
     vp update -g --latest
     __print_success "vp global packages updated"
-}
-
-# tpack manages plugins under a live tmux server (it resolves plugin config
-# via `tmux show-options`), so it only works from inside a tmux session.
-# Outside one, skip with guidance rather than fail.
-__update_tmux_plugins() {
-    if ! __command_exists tpack; then
-        __print_warning "tpack not installed, skipping tmux plugin update"
-        return 0
-    fi
-
-    if [[ -z "${TMUX:-}" ]]; then
-        __print_warning "Not inside a tmux session, skipping tmux plugin update"
-        __print_info "Run '${SCRIPT_NAME} update tmux' from inside tmux, or press prefix + U"
-        return 0
-    fi
-
-    __print_info "Updating tmux plugins (tpack)..."
-    tpack update all
-    __print_success "tmux plugins updated"
 }
 
 __update_yazi_packages() {
@@ -555,7 +535,6 @@ readonly -a UPDATE_STEPS=(
     "Flatpak apps            ;; __update_flatpak         ;; flatpak"
     "pi packages             ;; __update_pi_packages     ;; pi"
     "vp global packages      ;; __update_vp_packages     ;; vp"
-    "tmux plugins            ;; __update_tmux_plugins    ;; tmux"
     "Yazi packages           ;; __update_yazi_packages   ;; yazi"
     "Neovim nightly          ;; __install_nvim_nightly   ;; nvim"
 )
@@ -616,8 +595,8 @@ cmd_update() {
                 echo
                 echo "Update everything this machine has installed on top of the dotfiles:"
                 echo "dnf system packages, flatpak apps, pi itself and its installed"
-                echo "packages, vp global npm packages, tmux plugins (tpack), Yazi"
-                echo "packages, and Neovim nightly (built from source releases, installed to"
+                echo "packages, vp global npm packages, Yazi packages, and Neovim nightly"
+                echo "(built from source releases, installed to"
                 echo "${NVIM_NIGHTLY_DIR}). dnf, flatpak, and Neovim steps use sudo."
                 echo
                 echo "Give TARGET to update just one of these instead of everything."
@@ -664,8 +643,8 @@ cmd_outdated() {
         echo
         echo "Check every package manager and tool this machine tracks for available"
         echo "updates: dnf system packages, flatpak apps, pi packages, vp-managed"
-        echo "global npm packages and Node.js itself, tmux plugins (tpack, requires a"
-        echo "running tmux session), Yazi packages/flavors, and Neovim nightly."
+        echo "global npm packages and Node.js itself, Yazi packages/flavors, and"
+        echo "Neovim nightly."
         echo "Prints one combined, easy-to-scan report per source."
         echo
         echo "Read-only: this only checks, it never installs anything. Run"
@@ -719,8 +698,14 @@ cmd_outdated() {
     fi
 
     if __command_exists vp; then
-        local vp_json vp_rows
-        vp_json="$(vp outdated -g --format json 2>/dev/null || echo '{}')"
+        local vp_json vp_rows vp_status=0
+        vp_json="$(vp outdated -g --format json 2>/dev/null)" || vp_status=$?
+        # vp exits non-zero merely to signal "outdated packages found" (like
+        # npm outdated), not to indicate a failed check — don't let that
+        # trigger a fallback here, or the fallback's output would get
+        # concatenated onto the real JSON in the capture above. Only fall
+        # back to an empty object when there's truly no output.
+        [[ -z "$vp_json" ]] && vp_json='{}'
 
         vp_rows="$(jq -r 'to_entries[] | "\(.key)\t\(.value.current)\t\(.value.latest)"' <<< "$vp_json")"
         __outdated_section "vp global packages" "NAME\tCURRENT\tLATEST" "$vp_rows"
@@ -758,33 +743,6 @@ cmd_outdated() {
         grand_total=$((grand_total + pi_count))
     else
         __print_warning "pi not installed, skipping"
-    fi
-
-    if __command_exists tpack; then
-        if [[ -z "${TMUX:-}" ]]; then
-            __print_warning "tmux plugins: not inside a tmux session, skipping check"
-        elif __command_exists git && [[ -d "$HOME/.config/tmux/plugins" ]]; then
-            local tmux_rows="" tmux_count=0 dir tmux_name branch local_hash remote_hash
-            for dir in "$HOME/.config/tmux/plugins"/*/; do
-                [[ -d "${dir}/.git" ]] || continue
-                tmux_name="$(basename "$dir")"
-                branch="$(git -C "$dir" symbolic-ref --short -q HEAD 2>/dev/null)"
-                [[ -z "$branch" ]] && continue
-                local_hash="$(git -C "$dir" rev-parse HEAD 2>/dev/null)"
-                remote_hash="$(git -C "$dir" ls-remote origin "refs/heads/${branch}" 2>/dev/null | cut -f1)"
-                if [[ -n "$remote_hash" && "$local_hash" != "$remote_hash" ]]; then
-                    tmux_rows+="${tmux_name}"$'\t'"${local_hash:0:7}"$'\t'"${remote_hash:0:7}"$'\n'
-                    ((++tmux_count))
-                fi
-            done
-            tmux_rows="${tmux_rows%$'\n'}"
-            __outdated_section "tmux plugins" "NAME\tLOCAL\tREMOTE" "$tmux_rows"
-            grand_total=$((grand_total + tmux_count))
-        else
-            __print_warning "tmux plugins not found, skipping"
-        fi
-    else
-        __print_warning "tpack not installed, skipping tmux plugin check"
     fi
 
     if __command_exists ya && [[ -f "$HOME/.config/yazi/package.toml" ]]; then
@@ -871,7 +829,7 @@ cmd_help() {
     echo "    link                Symlink this script into ~/.local/bin/dot"
     echo "    unlink              Remove the ~/.local/bin/dot symlink"
     echo "    edit                Open the repo in \$EDITOR"
-    echo "    update [TARGET]     Update everything installed (dnf, flatpak, pi, vp, tmux, yazi, nvim)"
+    echo "    update [TARGET]     Update everything installed (dnf, flatpak, pi, vp, yazi, nvim)"
     echo "    outdated            Report outdated packages across every tool tracked (read-only)"
     echo "    help [COMMAND]      Show this help, or help for a specific command"
     echo

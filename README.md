@@ -27,7 +27,7 @@ git submodule update --init # populate home/.config/nvim
 ## Keeping a machine up to date
 
 ```sh
-./dot outdated  # read-only report: dnf, flatpak, pi, vp, tmux (tpack), Yazi, Neovim nightly
+./dot outdated  # read-only report: dnf, flatpak, pi, vp, Yazi, Neovim nightly
 ./dot update     # update everything reported above (dnf/flatpak/nvim steps use sudo)
 ./dot update pi  # update just one target — see `./dot help update` for the list
 ```
