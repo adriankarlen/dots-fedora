@@ -71,23 +71,6 @@ export FZF_DEFAULT_OPTS="
   --color=spinner:#f6c177,info:#9ccfd8
   --color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa"
 
-# nvim nightly
-function update-nvim() {
-  local dir="/opt/nvim-linux-arm64"
-  local tmp=$(mktemp -d)
-  echo "Downloading nvim nightly..."
-  curl -L --output-dir "$tmp" -O https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-arm64.tar.gz || {
-    rm -rf "$tmp"; echo "download failed" >&2; return 1
-  }
-  tar xzf "$tmp/nvim-linux-arm64.tar.gz" -C "$tmp" || {
-    rm -rf "$tmp"; echo "extract failed" >&2; return 1
-  }
-  sudo rm -rf "$dir"
-  sudo mv "$tmp/nvim-linux-arm64" "$dir"
-  rm -rf "$tmp"
-  echo "nvim updated: $($dir/bin/nvim --version | head -1)"
-}
-
 # aliases
 alias v="nvim"
 alias vi="nvim"
